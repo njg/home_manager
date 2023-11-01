@@ -13,6 +13,11 @@ in
 
   home.username = "njg";
   home.homeDirectory = "/home/njg";
+  programs.git = {
+    enable = true;
+    userName = "Nathan Goldschmidt";
+    userEmail = "nathan.goldschmidt@gmail.com";
+  };
 
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
@@ -50,6 +55,7 @@ in
     # give mkOutOfStoreSymlink a full (not relative) path, otherwise the file is copied into the nix store
     "${hd}/.config/doom".source = link "${hd}/.config/home-manager/dotfiles/doom";
     "${hd}/.ssh/config".source = link "${hd}/.config/home-manager/dotfiles/ssh/config";
+    "${hd}/.sops.yaml".source = link ./dotfiles/sops/dot-sops.yaml;
   };
 
   home = {
@@ -81,9 +87,14 @@ in
   sops = {
     gnupg.home = "${config.home.homeDirectory}/.gnupg";
     secrets.rclone-gdrive = {
-      sopsFile = ./secrets/rclone.conf;
+      sopsFile = ./secrets/rclone/rclone.conf.enc;
       format = "ini";
       path = "${config.home.homeDirectory}/.config/rclone/rclone.conf";
+    };
+    secrets.ssh-config-secret = {
+      sopsFile = ./secrets/ssh/config.secret.enc;
+      format = "binary";
+      path = "${hd}/.ssh/config.secret";
     };
   };
 

@@ -1,0 +1,6 @@
+#+title: Nate's home-manager config
+
+this is my personal set up using home-manager
+
+- secrets managed by sops-nix
+- remote storage via rclone
