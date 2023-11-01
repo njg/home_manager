@@ -1,0 +1,6 @@
+Host kilgore
+     User njg
+     Hostname kilgore.xen.prgmr.com
+Host kilgore.console
+     User kilgore
+     Hostname kilgore.console.xen.prgmr.com
