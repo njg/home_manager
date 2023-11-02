@@ -1,4 +1,4 @@
-{ inputs, config, pkgs, outputs, ... }:
+{ inputs, config, pkgs, outputs, lib, ... }:
 
 let
   hd = config.home.homeDirectory;
@@ -48,7 +48,44 @@ in
       ''echo "Hello, ${config.home.username}!"
       ''
     )
+    vim
+    wget
+    git
+    ripgrep
+    coreutils
+    fd
+    clang
+    gnumake
+    cmake
+    ((emacsPackagesFor emacs28).emacsWithPackages (epkgs: [ epkgs.vterm
+                                                            epkgs.pdf-tools
+                                                            epkgs.djvu ]))
+    (aspellWithDicts (dicts: with dicts; [ en en-computers en-science es]))
+    nixfmt
+
+    ghostscript
+    mupdf
+    imagemagick
+    poppler_utils
+
+    # for org mode in doom emacs
+    texlive.combined.scheme-medium
+    # required by +jupyter
+    (python3.withPackages(ps: with ps; [jupyter]))
+    shellcheck
+
+    # for +roam2 option for org mode in doom emacs
+    sqlite
+    pandoc
+    hugo
+    graphviz
+
+    starsector
   ];
+
+  home.activation.emacs-org-link = lib.hm.dag.entryAfter ["writeBoundary"] ''
+  $DRY_RUN_CMD ln -Tsf $VERBOSE_ARG $HOME/gdrive/org $HOME/org
+  '';
 
   # manage dotfiles
   home.file = {
@@ -85,11 +122,11 @@ in
   };
 
   sops = {
-    gnupg.home = "${config.home.homeDirectory}/.gnupg";
+    gnupg.home = "${hd}/.gnupg";
     secrets.rclone-gdrive = {
       sopsFile = ./secrets/rclone/rclone.conf.enc;
       format = "ini";
-      path = "${config.home.homeDirectory}/.config/rclone/rclone.conf";
+      path = "${hd}/.config/rclone/rclone.conf";
     };
     secrets.ssh-config-secret = {
       sopsFile = ./secrets/ssh/config.secret.enc;
@@ -97,8 +134,6 @@ in
       path = "${hd}/.ssh/config.secret";
     };
   };
-
-
 
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
