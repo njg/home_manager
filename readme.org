@@ -4,3 +4,12 @@ this is my personal set up using home-manager
 
 - secrets managed by sops-nix
 - remote storage via rclone
+
+
+update with the following
+
+#+begin_src bash
+$ cd ~/.config/home-manager
+$ nix flake lock --update-input sops-nix  --update-input home-manager --update-input nixpkgs
+$ home-manager switch
+#+end_src

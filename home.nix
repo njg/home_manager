@@ -35,12 +35,16 @@ in
   # The home.packages option allows you to install Nix packages into your
   # environment.
   home.packages = with pkgs; [
+    gimp
+    vlc
+    # cura
     firefox
     google-chrome
     fuse
     sops
     gnupg
     rclone
+    autossh
     # # You can also create simple shell scripts directly inside your
     # # configuration. For example, this adds a command 'my-hello' to your
     # # environment:
@@ -48,20 +52,25 @@ in
       ''echo "Hello, ${config.home.username}!"
       ''
     )
+    busybox
     vim
     wget
     git
+    gnugrep
     ripgrep
-    coreutils
+    # coreutils
     fd
-    clang
+    # clang
     gnumake
     cmake
-    ((emacsPackagesFor emacs28).emacsWithPackages (epkgs: [ epkgs.vterm
-                                                            epkgs.pdf-tools
-                                                            epkgs.djvu ]))
+    ((emacsPackagesFor emacs28).emacsWithPackages (epkgs: with epkgs; [ vterm
+                                                                        saveplace-pdf-view
+                                                                        pdf-tools
+                                                                        nov
+                                                                        djvu
+                                                                        ripgrep ]))
     (aspellWithDicts (dicts: with dicts; [ en en-computers en-science es]))
-    nixfmt
+    # nixfmt
 
     ghostscript
     mupdf
@@ -71,8 +80,15 @@ in
     # for org mode in doom emacs
     texlive.combined.scheme-medium
     # required by +jupyter
-    (python3.withPackages(ps: with ps; [jupyter]))
+    (python3.withPackages(ps: with ps; [ jupyter
+                                         isort
+                                         nose
+                                         pytest ]))
+    pipenv
     shellcheck
+
+    clj-kondo
+
 
     # for +roam2 option for org mode in doom emacs
     sqlite
@@ -81,6 +97,44 @@ in
     graphviz
 
     starsector
+    libvirt
+    virt-manager
+    virtiofsd
+
+    jdk17 ant ivy
+
+    appimage-run
+    qt6.full
+    qtcreator
+    qt6.qtdeclarative
+    qt6.qtquick3d
+
+
+    #  https://github.com/NixOS/nixpkgs/issues/186570
+    (let cura5 = appimageTools.wrapType2 rec {
+           name = "cura5";
+           version = "5.7.0";
+           src = fetchurl {
+             url = "https://github.com/Ultimaker/Cura/releases/download/${version}/UltiMaker-Cura-${version}-linux-X64.AppImage";
+             hash = "sha256-5PaBhPJKqa8LxEHTRNTLqkcIfC2PkqmTWx9c1+dc7k0=";
+           };
+           extraPkgs = pkgs: with pkgs; [ ];
+         }; in writeScriptBin "cura" ''
+      #! ${pkgs.bash}/bin/bash
+      # AppImage version of Cura loses current working directory and treats all paths relateive to $HOME.
+      # So we convert each of the files passed as argument to an absolute path.
+      # This fixes use cases like `cd /path/to/my/files; cura mymodel.stl anothermodel.stl`.
+      args=()
+      for a in "$@"; do
+        if [ -e "$a" ]; then
+          a="$(realpath "$a")"
+        fi
+        args+=("$a")
+      done
+      exec "${cura5}/bin/cura5" "''${args[@]}"
+    '')
+
+    calibre
   ];
 
   home.activation.emacs-org-link = lib.hm.dag.entryAfter ["writeBoundary"] ''
@@ -121,6 +175,25 @@ in
       };
   };
 
+  systemd.user.services.autossh-kilgore = {
+    Unit = {
+      Description = "ssh tunnel to kilgore";
+      After = [ "network.target" ];
+    };
+   Service = {
+     Type="simple";
+     # TODO autossh doesn't work well with "ControlMaster yes/auto"
+     ExecStart = ''%h/.nix-profile/bin/autossh -M 0 -o "ControlMaster no" \
+                                                    -L 8080:localhost:8080 \
+                                                    -L 8082:localhost:8082 \
+                                                    -L 8083:localhost:8083 \
+                                                    -N media@kilgore'';
+    };
+    Install = {
+      WantedBy = [ "default.target" ];
+    };
+  };
+
   sops = {
     gnupg.home = "${hd}/.gnupg";
     secrets.rclone-gdrive = {
@@ -134,6 +207,16 @@ in
       path = "${hd}/.ssh/config.secret";
     };
   };
+
+  # Specify default hypervisor for virt-manager
+  dconf.settings = {
+    "org/virt-manager/virt-manager/connections" = {
+      autoconnect = ["qemu:///system"];
+      uris = ["qemu:///system"];
+    };
+  };
+
+
 
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
@@ -149,6 +232,6 @@ in
     enable = true;
     defaultCacheTtl = 1800;
     enableSshSupport = true;
-    pinentryFlavor = "emacs";
+    # pinentryPackage = "emacs";
   };
 }
