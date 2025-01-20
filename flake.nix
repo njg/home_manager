@@ -11,7 +11,7 @@
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
-      inputs.nixpkgs-stable.follows = "nixpkgs";
+      # inputs.nixpkgs-stable.follows = "nixpkgs";
     };
   };
 
@@ -31,9 +31,6 @@
         # the path to your home.nix.
         modules = [ ./home.nix
                     sops-nix.homeManagerModules.sops ];
-
-        # Optionally use extraSpecialArgs
-        # to pass through arguments to home.nix
       };
     };
 }

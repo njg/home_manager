@@ -1,3 +1,5 @@
 creation_rules:
   - path_regex: secrets/.*\.dev\.enc\.ini\.json\.yaml$
-  - pgp: C226681FBFB227E39C7E9863AA6AC6465BDE44E2
+  - pgp: >-
+      C226681FBFB227E39C7E9863AA6AC6465BDE44E2,
+      B1A84146DEDD0065C03404100AFF57DF1C859E1E

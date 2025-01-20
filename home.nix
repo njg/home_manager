@@ -219,7 +219,7 @@ in
     gnupg.home = "${hd}/.gnupg";
     secrets.rclone-gdrive = {
       sopsFile = ./secrets/rclone/rclone.conf.enc;
-      format = "ini";
+      format = "binary";
       path = "${hd}/.config/rclone/rclone.conf";
     };
     secrets.ssh-config-secret = {
