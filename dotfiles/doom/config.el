@@ -42,7 +42,7 @@
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/org/")
 
-
+(use-package! esxml)
 (use-package! nov
   :defer t
   :mode ("\\.epub\\'" . nov-mode)

@@ -32,9 +32,14 @@ in
   # allow install of unfree software (eg google chrome)
   nixpkgs.config.allowUnfree = true;
 
+  services.pulseeffects.enable = true;
+
   # The home.packages option allows you to install Nix packages into your
   # environment.
   home.packages = with pkgs; [
+
+    usbutils # better lsusb than default nixos
+    yakuake
     gimp
     vlc
     # cura
@@ -63,32 +68,43 @@ in
     # clang
     gnumake
     cmake
-    ((emacsPackagesFor emacs28).emacsWithPackages (epkgs: with epkgs; [ vterm
+    ((emacsPackagesFor emacs30).emacsWithPackages (epkgs: with epkgs; [ vterm
                                                                         saveplace-pdf-view
                                                                         pdf-tools
                                                                         nov
                                                                         djvu
                                                                         ripgrep ]))
     (aspellWithDicts (dicts: with dicts; [ en en-computers en-science es]))
-    # nixfmt
+    nodePackages.npm
+    libtool
+    nixfmt-classic
+
+    file
+    mtr
+    sshfs
 
     ghostscript
     mupdf
     imagemagick
     poppler_utils
+    sigil # epub
+    calibre # ebook manager
+
+    webcamoid
+    yt-dlp
+    audacity
 
     # for org mode in doom emacs
     texlive.combined.scheme-medium
     # required by +jupyter
-    (python3.withPackages(ps: with ps; [ jupyter
-                                         isort
-                                         nose
-                                         pytest ]))
+    (python312.withPackages(ps: with ps; [ jupyter
+                                           isort
+                                           # nose
+                                           pytest ]))
     pipenv
     shellcheck
 
     clj-kondo
-
 
     # for +roam2 option for org mode in doom emacs
     sqlite
@@ -108,6 +124,10 @@ in
     qtcreator
     qt6.qtdeclarative
     qt6.qtquick3d
+
+
+
+    pulseaudio-dlna
 
 
     #  https://github.com/NixOS/nixpkgs/issues/186570
@@ -134,7 +154,6 @@ in
       exec "${cura5}/bin/cura5" "''${args[@]}"
     '')
 
-    calibre
   ];
 
   home.activation.emacs-org-link = lib.hm.dag.entryAfter ["writeBoundary"] ''
@@ -188,6 +207,8 @@ in
                                                     -L 8082:localhost:8082 \
                                                     -L 8083:localhost:8083 \
                                                     -N media@kilgore'';
+     Restart = "on-failure";
+     RestartSec = 15;
     };
     Install = {
       WantedBy = [ "default.target" ];
