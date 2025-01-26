@@ -42,6 +42,7 @@ in
     yakuake
     gimp
     vlc
+    # cura
     firefox
     google-chrome
     fuse
@@ -49,21 +50,31 @@ in
     gnupg
     rclone
     autossh
+    # # You can also create simple shell scripts directly inside your
+    # # configuration. For example, this adds a command 'my-hello' to your
+    # # environment:
+    (writeShellScriptBin "my-hello"
+      ''echo "Hello, ${config.home.username}!"
+      ''
+    )
+    busybox
     vim
     wget
     git
     gnugrep
     ripgrep
+    # coreutils
     fd
+    # clang
     gnumake
     cmake
-    ((emacsPackagesFor emacs29).emacsWithPackages (epkgs: with epkgs; [ vterm
+    ((emacsPackagesFor emacs30).emacsWithPackages (epkgs: with epkgs; [ vterm
                                                                         saveplace-pdf-view
                                                                         pdf-tools
                                                                         nov
                                                                         djvu
                                                                         ripgrep ]))
-     (aspellWithDicts (dicts: with dicts; [ en en-computers en-science es]))
+    (aspellWithDicts (dicts: with dicts; [ en en-computers en-science es]))
     nodePackages.npm
     libtool
     nixfmt-classic
@@ -86,8 +97,9 @@ in
     # for org mode in doom emacs
     texlive.combined.scheme-medium
     # required by +jupyter
-    (python3.withPackages(ps: with ps; [ jupyter
+    (python312.withPackages(ps: with ps; [ jupyter
                                            isort
+                                           # nose
                                            pytest ]))
     pipenv
     shellcheck
@@ -119,28 +131,28 @@ in
 
 
     #  https://github.com/NixOS/nixpkgs/issues/186570
-  #   (let cura5 = appimageTools.wrapType2 rec {
-  #          name = "cura5";
-  #          version = "5.7.0";
-  #          src = fetchurl {
-  #            url = "https://github.com/Ultimaker/Cura/releases/download/${version}/UltiMaker-Cura-${version}-linux-X64.AppImage";
-  #            hash = "sha256-5PaBhPJKqa8LxEHTRNTLqkcIfC2PkqmTWx9c1+dc7k0=";
-  #          };
-  #          extraPkgs = pkgs: with pkgs; [ ];
-  #        }; in writeScriptBin "cura" ''
-  #     #! ${pkgs.bash}/bin/bash
-  #     # AppImage version of Cura loses current working directory and treats all paths relateive to $HOME.
-  #     # So we convert each of the files passed as argument to an absolute path.
-  #     # This fixes use cases like `cd /path/to/my/files; cura mymodel.stl anothermodel.stl`.
-  #     args=()
-  #     for a in "$@"; do
-  #       if [ -e "$a" ]; then
-  #         a="$(realpath "$a")"
-  #       fi
-  #       args+=("$a")
-  #     done
-  #     exec "${cura5}/bin/cura5" "''${args[@]}"
-  #   '')
+    (let cura5 = appimageTools.wrapType2 rec {
+           name = "cura5";
+           version = "5.7.0";
+           src = fetchurl {
+             url = "https://github.com/Ultimaker/Cura/releases/download/${version}/UltiMaker-Cura-${version}-linux-X64.AppImage";
+             hash = "sha256-5PaBhPJKqa8LxEHTRNTLqkcIfC2PkqmTWx9c1+dc7k0=";
+           };
+           extraPkgs = pkgs: with pkgs; [ ];
+         }; in writeScriptBin "cura" ''
+      #! ${pkgs.bash}/bin/bash
+      # AppImage version of Cura loses current working directory and treats all paths relateive to $HOME.
+      # So we convert each of the files passed as argument to an absolute path.
+      # This fixes use cases like `cd /path/to/my/files; cura mymodel.stl anothermodel.stl`.
+      args=()
+      for a in "$@"; do
+        if [ -e "$a" ]; then
+          a="$(realpath "$a")"
+        fi
+        args+=("$a")
+      done
+      exec "${cura5}/bin/cura5" "''${args[@]}"
+    '')
 
   ];
 
@@ -232,10 +244,6 @@ in
   programs.bash = {
     enable = true;
     bashrcExtra = ''
-      if [ -f /etc/bashrc ];
-        then
-        source /etc/bashrc
-      fi
       unset __HM_SESS_VARS_SOURCED
       source "$HOME/.nix-profile/etc/profile.d/hm-session-vars.sh"
       export EDITOR=emacsclient
