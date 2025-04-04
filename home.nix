@@ -39,7 +39,7 @@ in
   home.packages = with pkgs; [
 
     usbutils # better lsusb than default nixos
-    yakuake
+    kdePackages.yakuake
     gimp
     vlc
     # cura
@@ -57,7 +57,6 @@ in
       ''echo "Hello, ${config.home.username}!"
       ''
     )
-    busybox
     vim
     wget
     git
@@ -68,7 +67,7 @@ in
     # clang
     gnumake
     cmake
-    ((emacsPackagesFor emacs29).emacsWithPackages (epkgs: with epkgs; [ vterm
+    ((emacsPackagesFor emacs30).emacsWithPackages (epkgs: with epkgs; [ vterm
                                                                         saveplace-pdf-view
                                                                         pdf-tools
                                                                         nov
@@ -200,7 +199,7 @@ in
       Description = "ssh tunnel to kilgore";
       After = [ "network.target" ];
     };
-   Service = {
+    Service = {
      Type="simple";
      # TODO autossh doesn't work well with "ControlMaster yes/auto"
      ExecStart = ''%h/.nix-profile/bin/autossh -M 0 -o "ControlMaster no" \
